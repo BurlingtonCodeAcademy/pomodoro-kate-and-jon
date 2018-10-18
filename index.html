@@ -7,6 +7,7 @@
     <style>
         body {
             font-family: 'Roboto Mono', monospace;
+            max-width: 210px;
         }
 
         #tomato {
@@ -93,12 +94,14 @@
         document.getElementById("clock").onclick = function adjustTime() {
             let currentSetting = document.getElementById("minutes").innerHTML;
             if (currentSetting <= 00 || totalSeconds <= 0) {
+                document.getElementById("minutes").innerHTML = '00';
                 document.getElementById("seconds").innerHTML = '01';
                 totalSeconds = 1;
             } else {
                 document.getElementById("minutes").innerHTML = (+currentSetting - 5).toString().padStart(2, '0');
                 totalSeconds = totalSeconds - 300;
                 if (currentSetting <= 00 || totalSeconds <= 0) {
+                    document.getElementById("minutes").innerHTML = '00';
                     document.getElementById("seconds").innerHTML = '01';
                     totalSeconds = 1;
                 }
