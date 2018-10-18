@@ -10,7 +10,7 @@
         }
 
         #tomato {
-            color: white;
+            color: rgb(236, 235, 235);
             background-image: url(./pomodoro.jpg);
             background-repeat: no-repeat;
             background-size: 100%;
@@ -28,7 +28,7 @@
         #seconds {
             display: inline;
         }
-    
+
         #box {
             display: flex;
             flex-direction: column;
@@ -36,12 +36,14 @@
             align-items: center;
         }
 
-        #start, #pause, #reset {
+        #start,
+        #pause,
+        #reset {
             height: 50px;
             width: 50px;
             border: 2px solid lightgray;
             border-radius: 50%;
-            color: white;
+            color: rgb(236, 235, 235);
             font-size: 10px;
             font-weight: bold;
         }
@@ -57,24 +59,23 @@
         #reset {
             background-color: rgb(221, 16, 16);
         }
-
     </style>
 </head>
 
 <body>
     <div id="box">
-    <div id="tomato">
-        <div id="clock">
-            <div id="minutes">25</div>:<div id="seconds">00</div>
+        <div id="tomato">
+            <div id="clock">
+                <div id="minutes">25</div>:<div id="seconds">00</div>
+            </div>
         </div>
-    </div>
 
-    <div id="buttons">
-        <button id='start' onclick='start()'>START</button>
-        <button id='pause' onclick="pause()">PAUSE</button>
-        <button id='reset' onclick="reset()">RESET</button>
+        <div id="buttons">
+            <button id='start' onclick='start()'>START</button>
+            <button id='pause' onclick="pause()">PAUSE</button>
+            <button id='reset' onclick="reset()">RESET</button>
 
-    </div>
+        </div>
     </div>
 
     <script>
@@ -88,6 +89,21 @@
             return (Math.floor(Date.now()/1000) - startTime);
         */
         reset();
+
+        document.getElementById("clock").onclick = function adjustTime() {
+            let currentSetting = document.getElementById("minutes").innerHTML;
+            if (currentSetting <= 00 || totalSeconds <= 0) {
+                document.getElementById("seconds").innerHTML = '01';
+                totalSeconds = 1;
+            } else {
+                document.getElementById("minutes").innerHTML = (+currentSetting - 5).toString().padStart(2, '0');
+                totalSeconds = totalSeconds - 300;
+                if (currentSetting <= 00 || totalSeconds <= 0) {
+                    document.getElementById("seconds").innerHTML = '01';
+                    totalSeconds = 1;
+                }
+            }
+        }
 
         function setDisplay(min, sec) {
             document.getElementById("minutes").innerHTML = min;
