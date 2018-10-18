@@ -1,118 +1,171 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
-
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
     <style>
-    #tomato {
-        font-size: 180px;
-    }
-    #clock, #minutes, #seconds {
-        display: inline;
-    }
+        body {
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        #tomato {
+            color: white;
+            background-image: url(./pomodoro.jpg);
+            background-repeat: no-repeat;
+            background-size: 100%;
+            background-position: center;
+            background-position-x: 7.5px;
+            height: 150px;
+            width: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #clock,
+        #minutes,
+        #seconds {
+            display: inline;
+        }
+    
+        #box {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #start, #pause, #reset {
+            height: 50px;
+            width: 50px;
+            border: 2px solid lightgray;
+            border-radius: 50%;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        #start {
+            background-color: rgb(9, 158, 9);
+        }
+
+        #pause {
+            background-color: rgb(255, 174, 0);
+        }
+
+        #reset {
+            background-color: rgb(221, 16, 16);
+        }
+
     </style>
 </head>
 
 <body>
+    <div id="box">
     <div id="tomato">
-        🍅
+        <div id="clock">
+            <div id="minutes">25</div>:<div id="seconds">00</div>
+        </div>
     </div>
-
-    <div id="clock">
-        <div id="minutes">00</div>:<div id="seconds">00</div>
-    </div>
-    <br><br>
 
     <div id="buttons">
-        <button id='start' onclick='start()'>Start</button> 
-        <button id='pause' onclick="pause()">Pause</button>
-        <button id='reset' onclick="reset()">Reset</button>
+        <button id='start' onclick='start()'>START</button>
+        <button id='pause' onclick="pause()">PAUSE</button>
+        <button id='reset' onclick="reset()">RESET</button>
 
+    </div>
     </div>
 
     <script>
-    
-    let totalSeconds = 1500;
-    let endTime = 0;
-    let intervalID = null;
-    /* returns seconds elapsed since start time
-    function timeElapsed(startTime){
-        return (Math.floor(Date.now()/1000) - startTime);
-    */
-    reset();
-    function endTimeSecs() {
-        let maxSeconds = totalSeconds + Math.floor(Date.now()/1000);
-        return maxSeconds;
-    }
-    function currentSeconds() {
-        let currSeconds = Math.floor(Date.now()/1000);
-        return currSeconds;
-    }
-    function minutesRemaining() {
-        let minutes = Math.floor((endTime - currentSeconds())/60);
-        return minutes.toString().padStart(2, '0');
-    }
-    function secondsRemaining() {
-        let seconds = Math.floor(endTime - currentSeconds()) - (60*minutesRemaining());
-        return seconds.toString().padStart(2, '0');
-    }
-    function setMinutes(){
-        document.getElementById("minutes").innerHTML = minutesRemaining();
-    }
-    function setSeconds(){
-        document.getElementById("seconds").innerHTML = secondsRemaining();
-    }
+
+        let totalSeconds = 1500;
+        let endTime = 0;
+        let intervalID = null;
+
+        /* returns seconds elapsed since start time
+        function timeElapsed(startTime){
+            return (Math.floor(Date.now()/1000) - startTime);
+        */
+        reset();
+
+        function setDisplay(min, sec) {
+            document.getElementById("minutes").innerHTML = min;
+            document.getElementById("seconds").innerHTML = sec;
+        }
+
+        function pauseEnable() {
+            document.getElementById("start").disabled = true;
+            document.getElementById("pause").disabled = false;
+        }
+
+        function startEnable() {
+            document.getElementById("pause").disabled = true;
+            document.getElementById("start").disabled = false;
+        }
+
+        function endTimeSecs() {
+            let maxSeconds = totalSeconds + Math.floor(Date.now() / 1000);
+            return maxSeconds;
+        }
+        function currentSeconds() {
+            let currSeconds = Math.floor(Date.now() / 1000);
+            return currSeconds;
+        }
+        function minutesRemaining() {
+            let minutes = Math.floor((endTime - currentSeconds()) / 60);
+            return minutes.toString().padStart(2, '0');
+        }
+        function secondsRemaining() {
+            let seconds = Math.floor(endTime - currentSeconds()) - (60 * minutesRemaining());
+            return seconds.toString().padStart(2, '0');
+        }
+        function setMinutes() {
+            document.getElementById("minutes").innerHTML = minutesRemaining();
+        }
+        function setSeconds() {
+            document.getElementById("seconds").innerHTML = secondsRemaining();
+        }
+
+        function stopTimer() {
+            if (document.getElementById("minutes").innerHTML == 00 && document.getElementById("seconds").innerHTML == 00) {
+                window.clearInterval(intervalID);
+                document.getElementById("pause").disabled = true;
+                let audio = new Audio('audio.wav');
+                audio.play();
+            }
+        }
 
 
-      // timer counts down from current number
-    function timer(){
-       setMinutes();
-       setSeconds();
-       //stop when 0
-    }
+        // timer counts down from current number
+        function timer() {
+            setMinutes();
+            setSeconds();
+            stopTimer();
+            //stop when 0
+        }
 
-    // click start button: disables start button, starts clock, enables pause and reset
-    function start(){
-        endTime = endTimeSecs();
-        intervalID = window.setInterval(timer, 100);
-        document.getElementById("start").disabled = true;
-        document.getElementById("pause").disabled = false;
-        document.getElementById("reset").disabled = false;
+        // click start button: disables start button, starts clock, enables pause and reset
+        function start() {
+            endTime = endTimeSecs();
+            intervalID = window.setInterval(timer, 100);
+            pauseEnable();
+        };
 
-    };
-
-    // click pause: pause button disabled, pause clock, start and reset buttons enabled
-    function pause(){
-        window.clearInterval(intervalID);
-        totalSeconds = endTime - currentSeconds();
-        document.getElementById("pause").disabled = true;
-        document.getElementById("start").disabled = false;
-        document.getElementById("reset").disabled = false;
-
-
-    };
-    // click reset: pause disabled, start enabled, reset 'enabled', resets clock to 25:00.
-    function reset(){
-        totalSeconds = 1500;
-        window.clearInterval(intervalID);
-        document.getElementById("minutes").innerHTML = '25';
-        document.getElementById("seconds").innerHTML = '00';
-        document.getElementById("pause").disabled = true;
-        document.getElementById("start").disabled = false;
-        document.getElementById("reset").disabled = false;
-
-
-
-    }
+        // click pause: pause button disabled, pause clock, start and reset buttons enabled
+        function pause() {
+            window.clearInterval(intervalID);
+            totalSeconds = endTime - currentSeconds();
+            startEnable();
+        };
+        // click reset: pause disabled, start enabled, reset 'enabled', resets clock to 25:00.
+        function reset() {
+            totalSeconds = 1500;
+            window.clearInterval(intervalID);
+            setDisplay('25', '00');
+            startEnable();
+        }
     </script>
 </body>
+
 </html>
-
-
-
-
-
-
-
-
-
