@@ -103,6 +103,7 @@
 
         document.getElementById("clock").onclick = function adjustTime() {
             let currentSetting = document.getElementById("minutes").innerHTML;
+            pause();
             document.getElementById("minutes").innerHTML = (+currentSetting - 5).toString().padStart(2, '0');
             totalSeconds = totalSeconds - 300;
             if (currentSetting <= 4 || totalSeconds <= 300) {
