@@ -12,6 +12,7 @@
 
         #tomato {
             color: rgb(236, 235, 235);
+            mix-blend-mode: multiply;
             background-image: url(./pomodoro.jpg);
             background-repeat: no-repeat;
             background-size: 100%;
@@ -22,6 +23,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
+        }
+
+        blend {
+            mix-blend-mode: multiply;
         }
 
         #clock,
@@ -48,16 +53,13 @@
             font-size: 10px;
             font-weight: bold;
         }
-
         #start {
             background-color: rgb(9, 158, 9);
         }
 
-
         #pause {
             background-color: rgb(255, 174, 0);
         }
-
         #reset {
             background-color: rgb(221, 16, 16);
         }
@@ -71,7 +73,7 @@
 
 <body>
     <div id="box">
-        <div id="tomato">
+        <div id="tomato" class="blend">
             <div id="clock">
                 <div id="minutes">25</div>:<div id="seconds">00</div>
             </div>
@@ -86,10 +88,16 @@
     </div>
 
     <script>
+        class Tomato {
+           constructor(){
 
+           } 
+
+        }
         let totalSeconds = 1500;
         let endTime = 0;
         let intervalID = null;
+        let rainbowID = null;
 
         reset();
 
@@ -97,7 +105,7 @@
             let currentSetting = document.getElementById("minutes").innerHTML;
             document.getElementById("minutes").innerHTML = (+currentSetting - 5).toString().padStart(2, '0');
             totalSeconds = totalSeconds - 300;
-            if (currentSetting <= 5 || totalSeconds <= 300) {
+            if (currentSetting <= 4 || totalSeconds <= 300) {
                 setDisplay("00", "01");
                 totalSeconds = 1;
             }
@@ -114,7 +122,7 @@
         }
 
         function endTimeSecs() {
-            let maxSeconds = totalSeconds + Math.floor(Date.now() / 1000);
+            let maxSeconds = totalSeconds + currentSeconds();
             return maxSeconds;
         }
         function currentSeconds() {
@@ -131,20 +139,31 @@
         }
 
         function stopTimer() {
+            console.log({intervalID})
             if (document.getElementById("minutes").innerHTML == 00 && document.getElementById("seconds").innerHTML == 00) {
                 window.clearInterval(intervalID);
                 document.getElementById("pause").disabled = true;
                 let audio = new Audio('audio.wav');
                 audio.play();
+                rainbowID = window.setInterval(flashRainbow, 610);
             }
         }
-
-
+        function flashRainbow(){
+            window.setTimeout('flash("red")', 100);
+            window.setTimeout('flash("orange")', 200);
+            window.setTimeout('flash("yellow")', 300);
+            window.setTimeout('flash("green")', 400);
+            window.setTimeout('flash("blue")', 500);
+            window.setTimeout('flash("purple")', 600);
+            window.setTimeout('flash("#ffffff")', 610);
+        }
+        function flash(color) {
+            document.body.style.backgroundColor = color;
+        }
         // timer counts down from current number
         function timer() {
             setDisplay(minutesRemaining(), secondsRemaining());
             stopTimer();
-            //stop when 0
         }
 
         // click start button: disables start button, starts clock, enables pause and reset
@@ -152,7 +171,6 @@
             endTime = endTimeSecs();
             intervalID = window.setInterval(timer, 100);
             manipulateButtons("pause", "start");
-            //pauseEnable();
         };
 
         // click pause: pause button disabled, pause clock, start and reset buttons enabled
@@ -164,9 +182,14 @@
         // click reset: pause disabled, start enabled, reset 'enabled', resets clock to 25:00.
         function reset() {
             totalSeconds = 1500;
+            console.log('Clearing')
+            console.log({rainbowID})
+            window.clearInterval(rainbowID);
             window.clearInterval(intervalID);
             setDisplay('25', '00');
             manipulateButtons("start", "pause");
+            flash('white');
+
         }
     </script>
 </body>
