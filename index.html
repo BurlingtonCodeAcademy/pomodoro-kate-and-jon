@@ -53,6 +53,7 @@
             background-color: rgb(9, 158, 9);
         }
 
+
         #pause {
             background-color: rgb(255, 174, 0);
         }
@@ -60,6 +61,11 @@
         #reset {
             background-color: rgb(221, 16, 16);
         }
+
+        button[disabled] {
+            opacity: .4;
+        }
+
     </style>
 </head>
 
@@ -85,26 +91,15 @@
         let endTime = 0;
         let intervalID = null;
 
-        /* returns seconds elapsed since start time
-        function timeElapsed(startTime){
-            return (Math.floor(Date.now()/1000) - startTime);
-        */
         reset();
 
         document.getElementById("clock").onclick = function adjustTime() {
             let currentSetting = document.getElementById("minutes").innerHTML;
-            if (currentSetting <= 00 || totalSeconds <= 0) {
-                document.getElementById("minutes").innerHTML = '00';
-                document.getElementById("seconds").innerHTML = '01';
+            document.getElementById("minutes").innerHTML = (+currentSetting - 5).toString().padStart(2, '0');
+            totalSeconds = totalSeconds - 300;
+            if (currentSetting <= 5 || totalSeconds <= 300) {
+                setDisplay("00", "01");
                 totalSeconds = 1;
-            } else {
-                document.getElementById("minutes").innerHTML = (+currentSetting - 5).toString().padStart(2, '0');
-                totalSeconds = totalSeconds - 300;
-                if (currentSetting <= 00 || totalSeconds <= 0) {
-                    document.getElementById("minutes").innerHTML = '00';
-                    document.getElementById("seconds").innerHTML = '01';
-                    totalSeconds = 1;
-                }
             }
         }
 
@@ -113,14 +108,9 @@
             document.getElementById("seconds").innerHTML = sec;
         }
 
-        function pauseEnable() {
-            document.getElementById("start").disabled = true;
-            document.getElementById("pause").disabled = false;
-        }
-
-        function startEnable() {
-            document.getElementById("pause").disabled = true;
-            document.getElementById("start").disabled = false;
+        function manipulateButtons(enabledButton, disabledButton) {
+            document.getElementById(disabledButton).disabled = true;
+            document.getElementById(enabledButton).disabled = false;
         }
 
         function endTimeSecs() {
@@ -139,12 +129,6 @@
             let seconds = Math.floor(endTime - currentSeconds()) - (60 * minutesRemaining());
             return seconds.toString().padStart(2, '0');
         }
-        function setMinutes() {
-            document.getElementById("minutes").innerHTML = minutesRemaining();
-        }
-        function setSeconds() {
-            document.getElementById("seconds").innerHTML = secondsRemaining();
-        }
 
         function stopTimer() {
             if (document.getElementById("minutes").innerHTML == 00 && document.getElementById("seconds").innerHTML == 00) {
@@ -158,8 +142,7 @@
 
         // timer counts down from current number
         function timer() {
-            setMinutes();
-            setSeconds();
+            setDisplay(minutesRemaining(), secondsRemaining());
             stopTimer();
             //stop when 0
         }
@@ -168,21 +151,22 @@
         function start() {
             endTime = endTimeSecs();
             intervalID = window.setInterval(timer, 100);
-            pauseEnable();
+            manipulateButtons("pause", "start");
+            //pauseEnable();
         };
 
         // click pause: pause button disabled, pause clock, start and reset buttons enabled
         function pause() {
             window.clearInterval(intervalID);
             totalSeconds = endTime - currentSeconds();
-            startEnable();
+            manipulateButtons("start", "pause");
         };
         // click reset: pause disabled, start enabled, reset 'enabled', resets clock to 25:00.
         function reset() {
             totalSeconds = 1500;
             window.clearInterval(intervalID);
             setDisplay('25', '00');
-            startEnable();
+            manipulateButtons("start", "pause");
         }
     </script>
 </body>
