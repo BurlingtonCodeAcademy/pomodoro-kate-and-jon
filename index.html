@@ -53,6 +53,7 @@
             font-size: 10px;
             font-weight: bold;
         }
+
         #start {
             background-color: rgb(9, 158, 9);
         }
@@ -60,6 +61,7 @@
         #pause {
             background-color: rgb(255, 174, 0);
         }
+
         #reset {
             background-color: rgb(221, 16, 16);
         }
@@ -67,7 +69,6 @@
         button[disabled] {
             opacity: .4;
         }
-
     </style>
 </head>
 
@@ -80,27 +81,133 @@
         </div>
 
         <div id="buttons">
-            <button id='start' onclick='start()'>START</button>
-            <button id='pause' onclick="pause()">PAUSE</button>
-            <button id='reset' onclick="reset()">RESET</button>
+            <button id='start'>START</button>
+            <button id='pause'>PAUSE</button>
+            <button id='reset'>RESET</button>
 
         </div>
     </div>
 
     <script>
+
+        
         class Tomato {
-           constructor(){
+            constructor(rangeSeconds, end) {
+                this.rangeSeconds = 1500;
+                this.end = 0;
+                this.intervalID = null; 
+                this.rainbowID = null;
+                this.startButton = document.getElementById('start');
+                this.pauseButton = document.getElementById('pause');
+                this.resetButton = document.getElementById('reset');
+                this.clock = document.getElementById('clock');
+                this.minutes = document.getElementById('minutes').innerHTML;
+                this.seconds = document.getElementById('seconds').innerHTML;
 
-           } 
+            }
+            setupButtons() {
+                this.startButton.addEventListener('click', this.start.bind(this));
+                this.pauseButton.addEventListener('click', this.pause.bind(this));
+                this.resetButton.addEventListener('click', this.reset.bind(this));
+                this.clock.addEventListener('click', this.adjustTime.bind(this));
 
-        }
-        let totalSeconds = 1500;
-        let endTime = 0;
-        let intervalID = null;
-        let rainbowID = null;
+            };
+            
+            setDisplay(min, sec) {
+                this.minutes = min;
+                this.seconds = sec;
+                document.getElementById('minutes').innerHTML = this.minutes;
+                document.getElementById('seconds').innerHTML = this.seconds;
+            };
 
-        reset();
+            manipulateButtons(pauseBoolean, startBoolean) {
+                this.pauseButton.disabled = pauseBoolean;
+                this.startButton.disabled = startBoolean;
+            };
+            currentSeconds() {
+                let currSeconds = Math.floor(Date.now() / 1000);
+                return currSeconds;
+            };
+            minutesRemaining() {
+                let minutes = Math.floor((this.startSeconds - this.currentSeconds()) / 60);
+                this.minutes = minutes.toString().padStart(2, '0')
+                return this.minutes;
+            };
+            secondsRemaining() {
+                let seconds = Math.floor(this.startSeconds - this.currentSeconds()) - (60 * this.minutesRemaining());
+                this.seconds = seconds.toString().padStart(2, '0')
+                return this.seconds;
+            };
+            // feature not really working..
+            stopTimer() {
+                if (this.minutes == '00' && this.seconds == '00') {
+                    window.clearInterval(this.intervalID);
+                    this.manipulateButtons(true, false);
+                    let audio = new Audio('audio.wav');
+                    audio.play();
+                    this.rainbowID = window.setInterval(this.flashRainbow.bind(this), 610);
+                }
+            };
+            // need to clean this up
+            flashRainbow() {
+                window.setTimeout(this.flash("red"), 100);
+                window.setTimeout(this.flash("orange"), 200);
+                window.setTimeout(this.flash("yellow"), 300);
+                window.setTimeout(this.flash("green"), 400);
+                window.setTimeout(this.flash("blue"), 500);
+                window.setTimeout(this.flash("purple"), 600);
+                window.setTimeout(this.flash("#ffffff"), 610);
+            };
 
+            flash(color) {
+                document.body.style.backgroundColor = color;
+            };
+            
+            timer() {
+                this.setDisplay(this.minutesRemaining(), this.secondsRemaining());
+                this.stopTimer();
+            };
+
+            adjustTime() {
+                let currentSetting = this.minutes;
+                this.pause();
+                this.minutes = (+currentSetting - 5).toString().padStart(2, '0');
+                this.seconds -= 300;
+                if (currentSetting <= 4 || this.seconds <= 300) {
+                    this.setDisplay("00", "01");
+                    this.seconds = 1;
+                }
+            }
+
+            // click start button: disables start button, starts clock, enables pause and reset
+            start() {
+                this.startSeconds = this.rangeSeconds + this.currentSeconds();
+                this.intervalID = window.setInterval(this.timer.bind(this), 1000);
+                this.manipulateButtons(false, true);
+            };
+
+            // click pause: pause button disabled, pause clock, start and reset buttons enabled
+            pause() {
+                window.clearInterval(this.intervalID);
+                this.rangeSeconds = this.startSeconds - this.currentSeconds();
+                this.manipulateButtons(true, false);
+            };
+            // click reset: pause disabled, start enabled, reset 'enabled', resets clock to 25:00.
+            reset() {
+                this.rangeSeconds = 10;
+                console.log('Clearing')
+                window.clearInterval(this.rainbowID);
+                window.clearInterval(this.intervalID);
+                this.setDisplay('25', '00');
+                this.manipulateButtons(true, false);
+            };
+        };
+
+        let myTomato = new Tomato;
+        myTomato.setupButtons();
+
+
+/*
         document.getElementById("clock").onclick = function adjustTime() {
             let currentSetting = document.getElementById("minutes").innerHTML;
             pause();
@@ -111,87 +218,7 @@
                 totalSeconds = 1;
             }
         }
-
-        function setDisplay(min, sec) {
-            document.getElementById("minutes").innerHTML = min;
-            document.getElementById("seconds").innerHTML = sec;
-        }
-
-        function manipulateButtons(enabledButton, disabledButton) {
-            document.getElementById(disabledButton).disabled = true;
-            document.getElementById(enabledButton).disabled = false;
-        }
-
-        function endTimeSecs() {
-            let maxSeconds = totalSeconds + currentSeconds();
-            return maxSeconds;
-        }
-        function currentSeconds() {
-            let currSeconds = Math.floor(Date.now() / 1000);
-            return currSeconds;
-        }
-        function minutesRemaining() {
-            let minutes = Math.floor((endTime - currentSeconds()) / 60);
-            return minutes.toString().padStart(2, '0');
-        }
-        function secondsRemaining() {
-            let seconds = Math.floor(endTime - currentSeconds()) - (60 * minutesRemaining());
-            return seconds.toString().padStart(2, '0');
-        }
-
-        function stopTimer() {
-            console.log({intervalID})
-            if (document.getElementById("minutes").innerHTML == 00 && document.getElementById("seconds").innerHTML == 00) {
-                window.clearInterval(intervalID);
-                document.getElementById("pause").disabled = true;
-                let audio = new Audio('audio.wav');
-                audio.play();
-                rainbowID = window.setInterval(flashRainbow, 610);
-            }
-        }
-        function flashRainbow(){
-            window.setTimeout('flash("red")', 100);
-            window.setTimeout('flash("orange")', 200);
-            window.setTimeout('flash("yellow")', 300);
-            window.setTimeout('flash("green")', 400);
-            window.setTimeout('flash("blue")', 500);
-            window.setTimeout('flash("purple")', 600);
-            window.setTimeout('flash("#ffffff")', 610);
-        }
-        function flash(color) {
-            document.body.style.backgroundColor = color;
-        }
-        // timer counts down from current number
-        function timer() {
-            setDisplay(minutesRemaining(), secondsRemaining());
-            stopTimer();
-        }
-
-        // click start button: disables start button, starts clock, enables pause and reset
-        function start() {
-            endTime = endTimeSecs();
-            intervalID = window.setInterval(timer, 100);
-            manipulateButtons("pause", "start");
-        };
-
-        // click pause: pause button disabled, pause clock, start and reset buttons enabled
-        function pause() {
-            window.clearInterval(intervalID);
-            totalSeconds = endTime - currentSeconds();
-            manipulateButtons("start", "pause");
-        };
-        // click reset: pause disabled, start enabled, reset 'enabled', resets clock to 25:00.
-        function reset() {
-            totalSeconds = 1500;
-            console.log('Clearing')
-            console.log({rainbowID})
-            window.clearInterval(rainbowID);
-            window.clearInterval(intervalID);
-            setDisplay('25', '00');
-            manipulateButtons("start", "pause");
-            flash('white');
-
-        }
+*/
     </script>
 </body>
 
