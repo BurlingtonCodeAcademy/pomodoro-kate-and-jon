@@ -10,7 +10,7 @@
             max-width: 210px;
         }
 
-        #tomato {
+        .tomato {
             color: rgb(236, 235, 235);
             mix-blend-mode: multiply;
             background-image: url(./pomodoro.jpg);
@@ -73,51 +73,116 @@
 </head>
 
 <body>
-    <div id="box">
-        <div id="tomato" class="blend">
-            <div id="clock">
-                <div id="minutes">25</div>:<div id="seconds">00</div>
+    <button id="copy" onclick="duplicate()">Make New Tomato!</button>
+
+        <div id="box">
+            <div class="tomato" class="blend">
+                <div class="clock" id="clock">
+                    <div class="mins" id="minutes">25</div>:<div class="secs" id="seconds">00</div>
+                </div>
+            </div>
+
+            <div class="buttons">
+                <button id='start'>START</button>
+                <button id='pause'>PAUSE</button>
+                <button id='reset'>RESET</button>
+            </div>
+            <div class="timebuttons">
+                <button id='subtract5'>-5 Minutes</button>
+                <button id='add5'>+5 Minutes</button>
             </div>
         </div>
 
-        <div id="buttons">
-            <button id='start'>START</button>
-            <button id='pause'>PAUSE</button>
-            <button id='reset'>RESET</button>
-
-        </div>
-    </div>
-
     <script>
-
+        let currentid = 0;
         
+       // let idList = ['box', 'tomato', 'clock', 'minutes', 'seconds', 'buttons', 'start', 'pause','reset', 'subtract5', 'add5'];
+
+
+        function duplicate() {
+            let tomato = document.getElementById('box');
+            console.log(tomato.children);
+            tomato.childNodes.forEach(child => {
+                console.log(child.id)
+
+            })
+            //console.log(event.target.id)
+
+            let tomatoClone = tomato.cloneNode(true);
+            let id = currentid+1;
+            tomatoClone.id = tomatoClone.id + id;
+            console.log(tomatoClone.id);
+            console.log(tomatoClone.childNodes);
+
+            tomatoClone.childNodes.forEach(element => {
+                element.id = element.id + id;
+                element.childNodes.forEach(child => {
+                    child.id = child.id + id;
+                });
+                element.parentNode.appendChild(element)
+
+            });
+            tomato.parentNode.appendChild(tomatoClone);
+            currentid++;
+        };
+
         class Tomato {
-            constructor(rangeSeconds, end) {
+            constructor(rangeSeconds, end, number) {
                 this.rangeSeconds = 1500;
                 this.end = 0;
-                this.intervalID = null; 
+                this.intervalID = null;
                 this.rainbowID = null;
+                this.number = number;
                 this.startButton = document.getElementById('start');
                 this.pauseButton = document.getElementById('pause');
                 this.resetButton = document.getElementById('reset');
+                this.addButton = document.getElementById('add5');
+                this.subtractButton = document.getElementById('subtract5');
                 this.clock = document.getElementById('clock');
                 this.minutes = document.getElementById('minutes').innerHTML;
                 this.seconds = document.getElementById('seconds').innerHTML;
+                
+            }
 
+        makeNewTomato(){
+                console.log("new tomato number: " + this.number);
+                this.reset();
+                this.startButton.id = 'start' + this.number;
+                this.pauseButton.id = 'pause' + this.number;
+                this.resetButton.id = 'reset'+ this.number;
+                this.addButton.id = 'add5'+ this.number;
+                this.subtractButton.id = 'subtract5'+this.number;
+                this.clock.id = 'clock'+this.number;
+                //this.minutes.parentNode.id = 'minutes'+this.number;
+                //this.seconds.parentNode.id = 'seconds'+this.number;
             }
             setupButtons() {
                 this.startButton.addEventListener('click', this.start.bind(this));
                 this.pauseButton.addEventListener('click', this.pause.bind(this));
                 this.resetButton.addEventListener('click', this.reset.bind(this));
-                this.clock.addEventListener('click', this.adjustTime.bind(this));
+                //this.clock.addEventListener('click', this.adjustTime.bind(this, event));
+                this.addButton.addEventListener('click', this.addTime.bind(this));
+                this.subtractButton.addEventListener('click', this.subtractTime.bind(this));
 
             };
-            
+
             setDisplay(min, sec) {
                 this.minutes = min;
                 this.seconds = sec;
                 document.getElementById('minutes').innerHTML = this.minutes;
                 document.getElementById('seconds').innerHTML = this.seconds;
+            };
+            addTime() {
+                this.rangeSeconds += 5 * 60;
+                this.minutes = +this.minutes + 5;
+                this.setDisplay(this.minutes, this.seconds)
+            };
+            subtractTime() {
+                if (this.minutes >= 5) {
+                    this.rangeSeconds -= 5 * 60;
+                    this.minutes = +this.minutes - 5;
+                    this.setDisplay(this.minutes, this.seconds)
+                }
             };
 
             manipulateButtons(pauseBoolean, startBoolean) {
@@ -140,7 +205,7 @@
             };
             // feature not really working..
             stopTimer() {
-                if (this.minutes == '00' && this.seconds == '00') {
+                if (this.minutes === '00' && this.seconds === '00') {
                     window.clearInterval(this.intervalID);
                     this.manipulateButtons(true, false);
                     let audio = new Audio('audio.wav');
@@ -162,27 +227,27 @@
             flash(color) {
                 document.body.style.backgroundColor = color;
             };
-            
+
             timer() {
                 this.setDisplay(this.minutesRemaining(), this.secondsRemaining());
                 this.stopTimer();
             };
-
-            adjustTime() {
-                let currentSetting = this.minutes;
-                this.pause();
-                this.minutes = (+currentSetting - 5).toString().padStart(2, '0');
-                this.seconds -= 300;
-                if (currentSetting <= 4 || this.seconds <= 300) {
-                    this.setDisplay("00", "01");
-                    this.seconds = 1;
-                }
-            }
-
+            /*
+                        adjustTime() {
+                            let currentSetting = this.minutes;
+                            this.pause();
+                            this.minutes = (+currentSetting - 5).toString().padStart(2, '0');
+                            this.seconds -= 300;
+                            if (currentSetting <= 4 || this.seconds <= 300) {
+                                this.setDisplay("00", "01");
+                                this.seconds = 1;
+                            }
+                        }
+            */
             // click start button: disables start button, starts clock, enables pause and reset
             start() {
                 this.startSeconds = this.rangeSeconds + this.currentSeconds();
-                this.intervalID = window.setInterval(this.timer.bind(this), 1000);
+                this.intervalID = window.setInterval(this.timer.bind(this), 100);
                 this.manipulateButtons(false, true);
             };
 
@@ -194,7 +259,7 @@
             };
             // click reset: pause disabled, start enabled, reset 'enabled', resets clock to 25:00.
             reset() {
-                this.rangeSeconds = 10;
+                this.rangeSeconds = 1500;
                 console.log('Clearing')
                 window.clearInterval(this.rainbowID);
                 window.clearInterval(this.intervalID);
@@ -203,7 +268,7 @@
             };
         };
 
-        let myTomato = new Tomato;
+        let myTomato = new Tomato(0, 1500, 1);
         myTomato.setupButtons();
 
 
